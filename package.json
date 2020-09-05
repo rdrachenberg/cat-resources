@@ -1,0 +1,25 @@
+{
+  "name": "cat-resources",
+  "version": "1.0.0",
+  "description": "An app for helping people find their new adoptive cats",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rdrachenberg/cat-resources.git"
+  },
+  "keywords": [
+    "javascript",
+    "cats",
+    "adoption",
+    "app"
+  ],
+  "author": "Ryan Drachenberg",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rdrachenberg/cat-resources/issues"
+  },
+  "homepage": "https://github.com/rdrachenberg/cat-resources#readme"
+}

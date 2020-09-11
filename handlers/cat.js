@@ -15,6 +15,9 @@ module.exports = (req, res) => {
         const index = fs.createReadStream(filePath);
 
         index.on('data', (data) =>{
+            res.writeHead(200, {
+                'Content-Type': 'text/html'
+            });
             res.write(data);
         });
 
@@ -31,6 +34,9 @@ module.exports = (req, res) => {
         const index = fs.createReadStream(filePath);
 
         index.on('data', (data) => {
+            res.writeHead(200, {
+                'Content-Type': 'text/html'
+            });
             res.write(data);
         });
 

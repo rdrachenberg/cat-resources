@@ -48,7 +48,38 @@ module.exports = (req, res) => {
             console.log(err);
         });
 
-    } else if (pathname === '/cats/add-cat' && req.method == 'POST') {
+    } else if (pathname === '/cats/add-breed' && req.method == 'POST') {
+        console.log('POST Hit! ');
+        let formData = '';
+
+        // formData.writeHead(200, {
+        //     'Content-Type': 'application/x-www-form-urlencoded'
+        // });
+
+        req.on('data', (data) => {
+            formData += data;
+        });
+
+        req.on('end', () => {
+            let body = qs.parse(formData); //! *******>>>>> Error HERE. <<<<<<<************
+            console.log(body);
+            fs.readFile('./data/breeds.json', (err, data) => {
+                if(err){
+                    throw err;
+                }
+
+                let breeds = JSON.parse(data);
+                breeds.push(body.breed);
+                let json = JSON.stringify(breeds);
+
+                fs.writeFile('./data/breeds.json', json, 'utf-8', () => console.log('The breed was uploaded'));
+            });
+            res.writeHead(200, {location: '#/'});
+            res.end();
+        });
+    }
+    
+    else if (pathname === '/cats/add-cat' && req.method == 'POST') {
         let form = new formidable.IncomingForm();
         form.parse(req, ( err, fields, files) => {
             if(err){

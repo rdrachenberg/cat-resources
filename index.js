@@ -17,4 +17,4 @@ http.createServer((req, res) => {
     // res.end();
     
 }).listen(port);
-console.log(`server started`);
+console.log(`server started on port: ${port}`);

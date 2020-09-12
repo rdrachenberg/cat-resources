@@ -13,12 +13,15 @@ module.exports = (req, res) => {
     if(pathname === '/cats/add-cat' && req.method == 'GET') {
         let filePath = path.normalize(path.join(__dirname, '../views/addCat.html'));
         const index = fs.createReadStream(filePath);
+        
 
         index.on('data', (data) =>{
             res.writeHead(200, {
                 'Content-Type': 'text/html'
             });
-            res.write(data);
+            let catBreedPlaceholder = breeds.map((breed) => `<option value="${breed}">${breed}</option>`);
+            let modifiedData = data.toString().replace('{{catBreeds}}', catBreedPlaceholder);
+            res.write(modifiedData);
         });
 
         index.on('end', () => {
@@ -61,7 +64,7 @@ module.exports = (req, res) => {
         });
 
         req.on('end', () => {
-            let body = qs.parse(formData); //! *******>>>>> Error HERE. <<<<<<<************
+            let body = qs.parse(formData);
             console.log(body);
             fs.readFile('./data/breeds.json', (err, data) => {
                 if(err){
@@ -72,10 +75,16 @@ module.exports = (req, res) => {
                 breeds.push(body.breed);
                 let json = JSON.stringify(breeds);
 
-                fs.writeFile('./data/breeds.json', json, 'utf-8', () => console.log('The breed was uploaded'));
+                fs.writeFile('./data/breeds.json', json, 'utf-8', () =>{ 
+                    res.writeHead(202, {location: '/' });
+                    console.log('The breed was uploaded');
+                    res.end();
+                    
+                });
             });
-            res.writeHead(200, {location: '#/'});
-            res.end();
+
+            // res.writeHead(202, { location: "/" });
+            // res.end();
         });
     }
     

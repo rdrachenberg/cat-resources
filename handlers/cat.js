@@ -76,7 +76,7 @@ module.exports = (req, res) => {
                 let json = JSON.stringify(breeds);
 
                 fs.writeFile('./data/breeds.json', json, 'utf-8', () =>{ 
-                    res.writeHead(202, {location: '/' });
+                    res.writeHead(202, {Location: '/' });
                     console.log('The breed was uploaded');
                     res.end();
                     
@@ -90,13 +90,14 @@ module.exports = (req, res) => {
     
     else if (pathname === '/cats/add-cat' && req.method == 'POST') {
         let form = new formidable.IncomingForm();
+
         form.parse(req, ( err, fields, files) => {
             if(err){
                 throw err;
             }
 
             let oldPath = files.upload.path;
-            let newPath = path.normalize(path.join(globalPath, '../content/images' + files.upload.name));
+            let newPath = path.normalize(path.join(__dirname, '../content/images' + files.upload.name));
 
             fs.rename(oldPath, newPath, (err) => {
                 if(err){
@@ -105,12 +106,24 @@ module.exports = (req, res) => {
                 console.log('files uploaded successfully!');
             });
 
-            fs.readFile('../data/cats.json', 'utf8', (err, data) => {
+            fs.readFile('./data/cats.json', 'utf8', (err, data) => {
                 let allCats = JSON.parse(data);
-                allCats.push({id:allCats.length = 1, ...fields, image: files.upload.name});
+                let id = 1;
+
+                if(allCats.length >= 1){
+                    id = allCats[allCats.length].id + 1;
+                }
+
+                allCats.push({
+                    id:id,
+                    ...fields,
+                    image: files.upload.name
+
+                });
                 let json = JSON.stringify(allCats);
-                fs.writeFile('../data/cats.json', json, () => {
-                    res.writeHead(202, {location: '/' });
+
+                fs.writeFile('./data/cats.json', json, () => {
+                    res.writeHead(302, {Location: '/'});
                     res.end();
                 });
             });
@@ -119,3 +132,33 @@ module.exports = (req, res) => {
         return true;
     }
 }
+
+ /*
+                content to use for cat upload description description 
+                Like dogs, cats look very different from people but share many of our body’ s characteristics, such as a circulatory system, lungs, a digestive tract, a nervous system, and so on.
+                There are many different breeds of cats, including Abyssinian, Himalayan, Maine Coon, Manx, Persian, Scottish Fold, and Siamese, to name a few.There are 40 distinct breeds, according to Cat Franciers' Association. 
+                The most familiar cats are the domestic shorthair and the domestic longhair, which are really mixtures of different breeds.Cat breeds differ in looks, coat length, and other characteristics but vary relatively little in size.On average, only 5 to 10 pounds separate the smallest and largest domestic breeds of cats.
+                Cats also share the rapid metabolism that dogs have, which results in a higher heart rate, respiratory rate, and temperature than those of people(see Table: Normal Feline Physiologic Values).Cats generally live longer than dogs, and many live to be 20 years old or older.
+                */
+ // let image = files.upload.name;
+
+ // currCat = allCats.filter((cat) => cat.id = id)[0];
+ // console.log(currCat);
+
+ // for(let item in fields){
+ //     console.log(item);
+
+ //     if(fields[item]!= currCat[item]){
+ //         currCat[item] = fields[item];
+ //     }
+ // }
+ // if(currCat[image]!= currCat[image]){
+ //     currCat[image] = currCat[image];
+ // }
+
+ // allCats.push({id:allCats.length = 1, ...fields, image: files.upload.name});
+ // let json = JSON.stringify(allCats);
+ // fs.writeFile('../data/cats.json', json, () => {
+ //     res.writeHead(202, {location: '/' });
+ //     res.end();
+ // });

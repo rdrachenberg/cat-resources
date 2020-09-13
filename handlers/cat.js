@@ -51,6 +51,39 @@ module.exports = (req, res) => {
             console.log(err);
         });
 
+    } else if (pathname.includes('/cats/edit') && req.method == 'GET') {
+        let filepath = path.normalize(path.join(__dirname, '../views/editCat.html'));
+        const index = fs.createReadStream(filepath);
+
+        index.on('data', (data) => {
+            res.writeHead(200, {
+                'Content-Type': 'text/html'
+            });
+            // res.write(data);
+        });
+        fs.readFile(filepath, (err,data) => {
+            if(err){
+                console.log(err);
+
+                res.end();
+                return;
+            }
+
+            let id = pathname.split('/')[3];
+            let catToEdit = cats.findIndex((cat) => cat.id == id);
+            let catBreedTemp = breeds.map((breed) => {
+                return `<option value = "${breed}">${breed}</option>`;
+            });
+
+            let modifiedData = data.toString().replace('{{catBreeds}}', catBreedTemp.join(""));
+            modifiedData = modifiedData.toString().replace('{{name}}', catToEdit.name);
+            modifiedData = modifiedData.toString().replace('{{description}}', catToEdit.description);
+            modifiedData = modifiedData.toString().replace('{{id}}', catToEdit.id);
+
+            res.write(modifiedData);
+            res.end();
+        });
+
     } else if (pathname === '/cats/add-breed' && req.method == 'POST') {
         console.log('POST Hit! ');
         let formData = '';
@@ -76,7 +109,7 @@ module.exports = (req, res) => {
                 let json = JSON.stringify(breeds);
 
                 fs.writeFile('./data/breeds.json', json, 'utf-8', () =>{ 
-                    res.writeHead(202, {Location: '/' });
+                    res.writeHead(302, {Location: '/'});
                     console.log('The breed was uploaded');
                     res.end();
                     
@@ -86,9 +119,7 @@ module.exports = (req, res) => {
             // res.writeHead(202, { location: "/" });
             // res.end();
         });
-    }
-    
-    else if (pathname === '/cats/add-cat' && req.method == 'POST') {
+    } else if (pathname === '/cats/add-cat' && req.method == 'POST') {
         let form = new formidable.IncomingForm();
 
         form.parse(req, ( err, fields, files) => {
@@ -97,7 +128,7 @@ module.exports = (req, res) => {
             }
 
             let oldPath = files.upload.path;
-            let newPath = path.normalize(path.join(__dirname, '../content/images' + files.upload.name));
+            let newPath = path.normalize(path.join(__dirname, '../content/images/' + files.upload.name));
 
             fs.rename(oldPath, newPath, (err) => {
                 if(err){
@@ -111,7 +142,7 @@ module.exports = (req, res) => {
                 let id = 1;
 
                 if(allCats.length >= 1){
-                    id = allCats[allCats.length].id + 1;
+                    id = allCats.length + 1;
                 }
 
                 allCats.push({
@@ -128,18 +159,20 @@ module.exports = (req, res) => {
                 });
             });
         });
+    } else if (pathname === '/cats/find-home' && req.method == 'POST') {
+    
     } else {
         return true;
     }
 }
 
  /*
-                content to use for cat upload description description 
-                Like dogs, cats look very different from people but share many of our body’ s characteristics, such as a circulatory system, lungs, a digestive tract, a nervous system, and so on.
-                There are many different breeds of cats, including Abyssinian, Himalayan, Maine Coon, Manx, Persian, Scottish Fold, and Siamese, to name a few.There are 40 distinct breeds, according to Cat Franciers' Association. 
-                The most familiar cats are the domestic shorthair and the domestic longhair, which are really mixtures of different breeds.Cat breeds differ in looks, coat length, and other characteristics but vary relatively little in size.On average, only 5 to 10 pounds separate the smallest and largest domestic breeds of cats.
-                Cats also share the rapid metabolism that dogs have, which results in a higher heart rate, respiratory rate, and temperature than those of people(see Table: Normal Feline Physiologic Values).Cats generally live longer than dogs, and many live to be 20 years old or older.
-                */
+    content to use for cat upload description: 
+    Like dogs, cats look very different from people but share many of our body’ s characteristics, such as a circulatory system, lungs, a digestive tract, a nervous system, and so on.
+    There are many different breeds of cats, including Abyssinian, Himalayan, Maine Coon, Manx, Persian, Scottish Fold, and Siamese, to name a few.There are 40 distinct breeds, according to Cat Franciers' Association. 
+    The most familiar cats are the domestic shorthair and the domestic longhair, which are really mixtures of different breeds.Cat breeds differ in looks, coat length, and other characteristics but vary relatively little in size.On average, only 5 to 10 pounds separate the smallest and largest domestic breeds of cats.
+    Cats also share the rapid metabolism that dogs have, which results in a higher heart rate, respiratory rate, and temperature than those of people(see Table: Normal Feline Physiologic Values).Cats generally live longer than dogs, and many live to be 20 years old or older.
+*/
  // let image = files.upload.name;
 
  // currCat = allCats.filter((cat) => cat.id = id)[0];

@@ -68,6 +68,8 @@ module.exports = (req, res) => {
                 res.end();
                 return;
             }
+            console.log(data + ' <<<<<<<<<< this is the data');
+            console.log(pathname + ' <<<<<<<<<< this is the pathname');
 
             let id = pathname.split('/')[3];
             let catToEdit = cats.findIndex((cat) => cat.id == id);

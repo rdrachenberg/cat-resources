@@ -60,32 +60,45 @@ module.exports = (req, res) => {
                 'Content-Type': 'text/html'
             });
             // res.write(data);
-        });
-        fs.readFile(filepath, (err,data) => {
+        
+        fs.readFile(filepath, (err, data) => {
             if(err){
                 console.log(err);
 
                 res.end();
                 return;
             }
-            console.log(data + ' <<<<<<<<<< this is the data');
-            console.log(pathname + ' <<<<<<<<<< this is the pathname');
-
+            
             let id = pathname.split('/')[3];
-            let catToEdit = cats.findIndex((cat) => cat.id == id);
+            console.log(id);
+            console.log('^^id^^');
+            
+            let catToEdit = cats.find((cat) => cat.id == id);
+            console.log(catToEdit);
+            console.log('^^catToEdit^^');
+            
             let catBreedTemp = breeds.map((breed) => {
                 return `<option value = "${breed}">${breed}</option>`;
             });
 
             let modifiedData = data.toString().replace('{{catBreeds}}', catBreedTemp.join(""));
             modifiedData = modifiedData.toString().replace('{{name}}', catToEdit.name);
+
             modifiedData = modifiedData.toString().replace('{{description}}', catToEdit.description);
             modifiedData = modifiedData.toString().replace('{{id}}', catToEdit.id);
+            // console.log(modifiedData);
 
-            res.write(modifiedData);
+            // res.writeHead(200, {
+            //     'Content-Type': 'text/html'
+            // });
+            res.write(`${modifiedData}`);
+            console.log('test');
             res.end();
         });
-
+        // res.writeHead(200, {
+        //     'Content-Type': 'text/html'
+        // });
+        });
     } else if (pathname === '/cats/add-breed' && req.method == 'POST') {
         console.log('POST Hit! ');
         let formData = '';

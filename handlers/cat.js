@@ -59,8 +59,7 @@ module.exports = (req, res) => {
             res.writeHead(200, {
                 'Content-Type': 'text/html'
             });
-            // res.write(data);
-        
+
         fs.readFile(filepath, (err, data) => {
             if(err){
                 console.log(err);
@@ -71,11 +70,8 @@ module.exports = (req, res) => {
             
             let id = pathname.split('/')[3];
             console.log(id);
-            console.log('^^id^^');
-            
             let catToEdit = cats.find((cat) => cat.id == id);
-            console.log(catToEdit);
-            console.log('^^catToEdit^^');
+            // console.log(catToEdit);
             
             let catBreedTemp = breeds.map((breed) => {
                 return `<option value = "${breed}">${breed}</option>`;
@@ -86,11 +82,7 @@ module.exports = (req, res) => {
 
             modifiedData = modifiedData.toString().replace('{{description}}', catToEdit.description);
             modifiedData = modifiedData.toString().replace('{{id}}', catToEdit.id);
-            // console.log(modifiedData);
-
-            // res.writeHead(200, {
-            //     'Content-Type': 'text/html'
-            // });
+            
             res.write(`${modifiedData}`);
             console.log('test');
             res.end();
@@ -174,7 +166,64 @@ module.exports = (req, res) => {
                 });
             });
         });
-    } else if (pathname === '/cats/find-home' && req.method == 'POST') {
+    } else if (pathname.includes('/cats/edit') && req.method == 'POST') {
+        let id = pathname.split('/')[3];
+        let catToEdit = cats.find((cat) => cat.id == id);
+
+        let form = new formidable.IncomingForm();
+
+        form.parse(req, (err, fields, files) => {
+            if(err){
+                throw err; 
+            }
+            if(files.upload.name != catToEdit.image){
+                let oldPath = files.upload.path;
+
+                let newPath = path.normalize(path.join(__dirname, '../content/images/' + files.upload.name));
+
+                // fs.rename(oldPath, newPath, function(err) {
+                //     if(err){
+                //         throw err;
+                //     }
+                //     console.log('The image was uploaded!');
+                // });
+                fs.copyFile(oldPath, newPath, function (err) {
+                    if(err) 
+                    throw err;
+                    console.log('Image uploaded successfully!!!!');
+                });
+            }
+
+            fs.readFile('./data/cats.json', 'utf8', (err, data) => {
+            
+                let allCats = JSON.parse(data);
+                console.log(allCats);
+                let image = files.upload.name;
+
+                let currCat = allCats.filter((cat) => cat.id = id)[0];
+                console.log(currCat);
+                
+                for(let item in fields) {
+                    if(fields[item]!= currCat[item]) {
+                        currCat[item] = fields[item];
+                    }
+                }
+
+                if(currCat[image] != image){
+                    currCat[image] = image;
+                }
+
+                let json = JSON.stringify(allCats);
+
+                fs.writeFile('./data/cats.json', json, () => {
+                    res.writeHead(302, {Location: '/'});
+                    res.end();
+                });
+            });
+        });
+    }
+    
+    else if (pathname === '/cats/find-home' && req.method == 'POST') {
     
     } else {
         return true;

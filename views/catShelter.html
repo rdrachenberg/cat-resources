@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="../content//styles/site.css">
+    <link rel="stylesheet" href="../../content/styles/site.css">
     <link href="https://use.fontawesome.com/releases/v5.0.7/css/all.css" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="../../content/images/pawprint.ico"/>
     <title>Cat Shelter</title>
 </head>
 <body>
@@ -19,13 +20,13 @@
         </nav>
         <h1>Cat Shelter</h1>
     </header>
-        <form action="#" class="cat-form">
+        <form action="/cats/find-home/{{id}}" method='POST' class="cat-form">
             <h2>Shelter the cat</h2>
-            <img src="{{image}}" alt="{{catName}}">
+            <img src="{{image}}" alt="">
             <label for="name">Name</label>
             <input type="text" id="name" value="{{name}}" disabled>
             <label for="description">Description</label>
-            <textarea id="description" disabled>Dominant and aggressive to other cats. Will probably eat you in your sleep. Very cute tho.</textarea>
+            <textarea id="description" disabled>{{description}}</textarea>
             <label for="group">Breed</label>
             <select id="group" disabled>
                 {{breeds}}

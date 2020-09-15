@@ -60,7 +60,7 @@ module.exports = (req, res) => {
                 'Content-Type': 'text/html'
             });
 
-        fs.readFile(filepath, (err, data) => {
+        fs.readFile(filepath, 'utf8',(err, data) => {
             if(err){
                 console.log(err);
 
@@ -83,7 +83,7 @@ module.exports = (req, res) => {
             modifiedData = modifiedData.toString().replace('{{description}}', catToEdit.description);
             modifiedData = modifiedData.toString().replace('{{id}}', catToEdit.id);
             
-            res.write(`${modifiedData}`);
+            res.write(modifiedData);
             console.log('test');
             res.end();
         });
@@ -91,6 +91,51 @@ module.exports = (req, res) => {
         //     'Content-Type': 'text/html'
         // });
         });
+    } else if (pathname.includes('/cats/find-home') && req.method == 'GET') {
+        let filepath = path.normalize(path.join(__dirname, '../views/catShelter.html'));
+        const index = fs.createReadStream(filepath);
+        
+        index.on('data', (data) => {
+            res.writeHead(200, {
+                'Content-Type': 'text/html'
+            });
+            
+            fs.readFile(filepath, 'utf8', (err, data) => {
+                if (err) {
+                    console.log(err);
+
+                    res.end();
+                    return;
+                }
+
+                let id = pathname.split('/').pop();
+                console.log(id);
+                let catToEdit = cats.findIndex((cat) => cat.id == id);
+                console.log(cats[catToEdit]);
+                let catBreedTemp = breeds.map((breed) => {
+                    return `<option value = "${breed}">${breed}</option>`;
+                });
+                let modifiedData = data.toString().replace("{{breeds}}", catBreedTemp.join(""));
+                // modifiedData = modifiedData.toString().replace('{{name}}', catToEdit.name);
+                // modifiedData = modifiedData.toString().replace('{{name}}', catToEdit.name);
+
+                modifiedData = modifiedData.toString().replace("{{name}}", cats[catToEdit].name);
+                modifiedData = modifiedData.toString().replace("{{description}}", cats[catToEdit].description);
+                modifiedData = modifiedData.toString().replace("{{id}}", cats[catToEdit].id);
+                modifiedData = modifiedData.toString().replace("{{image}}", `${path.join("../../content/images/" + cats[catToEdit].image)}`);
+                // let img = `${path.join('./content/images/' + catToEdit.image)}`;
+
+                res.write(modifiedData);
+                console.log('test');
+                res.end();
+            });
+        });
+        
+        index.on('error', (err) => {
+            console.log(err);
+        });
+        
+
     } else if (pathname === '/cats/add-breed' && req.method == 'POST') {
         console.log('POST Hit! ');
         let formData = '';
@@ -167,8 +212,8 @@ module.exports = (req, res) => {
             });
         });
     } else if (pathname.includes('/cats/edit') && req.method == 'POST') {
-        let id = pathname.split('/')[3];
-        let catToEdit = cats.find((cat) => cat.id == id);
+        let id = pathname.split('/').pop();
+        let catToEdit = cats.findIndex(cat => cat.id == id);
 
         let form = new formidable.IncomingForm();
 
@@ -176,42 +221,59 @@ module.exports = (req, res) => {
             if(err){
                 throw err; 
             }
+            console.log(fields.name);
+
             if(files.upload.name != catToEdit.image){
                 let oldPath = files.upload.path;
 
                 let newPath = path.normalize(path.join(__dirname, '../content/images/' + files.upload.name));
 
-                // fs.rename(oldPath, newPath, function(err) {
-                //     if(err){
-                //         throw err;
-                //     }
-                //     console.log('The image was uploaded!');
-                // });
-                fs.copyFile(oldPath, newPath, function (err) {
-                    if(err) 
-                    throw err;
-                    console.log('Image uploaded successfully!!!!');
+                fs.rename(oldPath, newPath, function(err) {
+                    if(err){
+                        console.log(err);
+                        throw err;
+                    }
+                    console.log('The image was uploaded!');
                 });
+                // fs.copyFile(oldPath, newPath, function (err) {
+                //     if(err) 
+                //     throw err;
+                //     console.log('Image uploaded successfully!!!!');
+                // });
             }
 
-            fs.readFile('./data/cats.json', 'utf8', (err, data) => {
-            
+            fs.readFile('./data/cats.json', (err, data) => {
+
                 let allCats = JSON.parse(data);
-                console.log(allCats);
-                let image = files.upload.name;
-
-                let currCat = allCats.filter((cat) => cat.id = id)[0];
-                console.log(currCat);
+                console.log(allCats[catToEdit]);
+                console.log('^^^^^allCats[catToEdit]^^^^^^');
+                // console.log(fields);
+                // let image = files.upload.name;
+                console.log(id);
+                console.log(allCats[catToEdit]);
                 
-                for(let item in fields) {
-                    if(fields[item]!= currCat[item]) {
-                        currCat[item] = fields[item];
-                    }
-                }
+                allCats[catToEdit] = {
+                    id: id, 
+                    ...fields,
+                    image: files.upload.name
+                };
 
-                if(currCat[image] != image){
-                    currCat[image] = image;
-                }
+                
+                // allCats[catToEdit] = JSON.stringify(allCats[catToEdit]);
+                console.log(allCats[catToEdit]);
+                // let currCat = allCats;
+                // console.log(currCat);
+                
+                // for(let item in fields) {
+                //     console.log(item);
+                //     if (fields[item] != allCats[item]) {
+                //         allCats[item] = fields[item];
+                //     }
+                // }
+
+                // if (allCats[image] != image) {
+                //     allCats[image] = image;
+                // }
 
                 let json = JSON.stringify(allCats);
 
@@ -221,14 +283,34 @@ module.exports = (req, res) => {
                 });
             });
         });
-    }
+    } 
+    else if (pathname.includes('/cats/find-home') && req.method == 'POST') {
+        let id = pathname.split('/').pop();
+        // let catToEdit = cats.findIndex(cat => cat.id == id);
+        // console.log(object)
+        fs.readFile('./data/cats.json', 'utf8', (err, data) => {
+            let allCats = JSON.parse(data);
+            currCat = allCats.find(cat => cat.id = id)[0];
+
+            console.log(currCat);
+            if(currCat != undefined){
+                allCats = currCat;
+            } else {
+                allCats = [];
+            }
+            let json =JSON.stringify(allCats);
+
+            fs.writeFile('./data/cats.json', json, () => {
+                res.writeHead(302, {Location:'/'});
+                res.end();
+            });
+        });
     
-    else if (pathname === '/cats/find-home' && req.method == 'POST') {
-    
-    } else {
+    } 
+    else {
         return true;
     }
-}
+};
 
  /*
     content to use for cat upload description: 

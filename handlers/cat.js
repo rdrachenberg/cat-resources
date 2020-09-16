@@ -216,7 +216,6 @@ module.exports = (req, res) => {
         let catToEdit = cats.findIndex(cat => cat.id == id);
 
         let form = new formidable.IncomingForm();
-
         form.parse(req, (err, fields, files) => {
             if(err){
                 throw err; 
@@ -286,18 +285,23 @@ module.exports = (req, res) => {
     } 
     else if (pathname.includes('/cats/find-home') && req.method == 'POST') {
         let id = pathname.split('/').pop();
-        // let catToEdit = cats.findIndex(cat => cat.id == id);
-        // console.log(object)
-        fs.readFile('./data/cats.json', 'utf8', (err, data) => {
-            let allCats = JSON.parse(data);
-            currCat = allCats.find(cat => cat.id = id)[0];
 
-            console.log(currCat);
-            if(currCat != undefined){
-                allCats = currCat;
-            } else {
-                allCats = [];
-            }
+        fs.readFile('./data/cats.json', 'utf8', (err, data) => {
+            
+            let allCats = JSON.parse(data);
+            // console.log(allCats);
+
+            let currCat = allCats.findIndex(cat => cat.id = id);
+            if(currCat > -1 ? allCats.splice(currCat, 1): false);
+
+            console.log(currCat + ' <<<<<<<<< Curr Cat');
+
+            // if(currCat != undefined){
+            //     allCats = currCat;
+            // } else {
+            //     allCats = [];
+            // }
+            
             let json =JSON.stringify(allCats);
 
             fs.writeFile('./data/cats.json', json, () => {

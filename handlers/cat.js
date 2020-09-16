@@ -234,12 +234,9 @@ module.exports = (req, res) => {
 
             fs.readFile('./data/cats.json', 'utf8', (err, data) => {
                 let allCats = JSON.parse(data);
-                //! FOR SOME REASON I AM NOT GETTING ANY FORM FIELDS VALUES
                 allCats[catToEdit] = {
                     id: id,
-                    name: fields.name,
-                    description: fields.description,
-                    breed: fields.breed,
+                    ...fields,
                     image: files.upload.name
                 };
                 console.log(allCats[catToEdit]);

@@ -140,10 +140,6 @@ module.exports = (req, res) => {
         console.log('POST Hit! ');
         let formData = '';
 
-        // formData.writeHead(200, {
-        //     'Content-Type': 'application/x-www-form-urlencoded'
-        // });
-
         req.on('data', (data) => {
             formData += data;
         });
@@ -216,92 +212,58 @@ module.exports = (req, res) => {
         let catToEdit = cats.findIndex(cat => cat.id == id);
 
         let form = new formidable.IncomingForm();
+        
         form.parse(req, (err, fields, files) => {
-            if(err){
-                throw err; 
+            if (err) {
+                throw err;
             }
-            console.log(fields.name);
+            console.log(fields);
 
-            if(files.upload.name != catToEdit.image){
+            if (files.upload.name != catToEdit.image) {
                 let oldPath = files.upload.path;
-
                 let newPath = path.normalize(path.join(__dirname, '../content/images/' + files.upload.name));
 
-                fs.rename(oldPath, newPath, function(err) {
-                    if(err){
+                fs.rename(oldPath, newPath, function (err) {
+                    if (err) {
                         console.log(err);
                         throw err;
                     }
                     console.log('The image was uploaded!');
                 });
-                // fs.copyFile(oldPath, newPath, function (err) {
-                //     if(err) 
-                //     throw err;
-                //     console.log('Image uploaded successfully!!!!');
-                // });
             }
 
-            fs.readFile('./data/cats.json', (err, data) => {
-
+            fs.readFile('./data/cats.json', 'utf8', (err, data) => {
                 let allCats = JSON.parse(data);
-                console.log(allCats[catToEdit]);
-                console.log('^^^^^allCats[catToEdit]^^^^^^');
-                // console.log(fields);
-                // let image = files.upload.name;
-                console.log(id);
-                console.log(allCats[catToEdit]);
-                
+                //! FOR SOME REASON I AM NOT GETTING ANY FORM FIELDS VALUES
                 allCats[catToEdit] = {
-                    id: id, 
-                    ...fields,
+                    id: id,
+                    name: fields.name,
+                    description: fields.description,
+                    breed: fields.breed,
                     image: files.upload.name
                 };
-
-                
-                // allCats[catToEdit] = JSON.stringify(allCats[catToEdit]);
                 console.log(allCats[catToEdit]);
-                // let currCat = allCats;
-                // console.log(currCat);
-                
-                // for(let item in fields) {
-                //     console.log(item);
-                //     if (fields[item] != allCats[item]) {
-                //         allCats[item] = fields[item];
-                //     }
-                // }
-
-                // if (allCats[image] != image) {
-                //     allCats[image] = image;
-                // }
-
+                // allCats.splice(catToEdit, 1, replacement);
                 let json = JSON.stringify(allCats);
 
                 fs.writeFile('./data/cats.json', json, () => {
-                    res.writeHead(302, {Location: '/'});
+                    res.writeHead(302, {
+                        Location: '/'
+                    });
                     res.end();
                 });
             });
         });
-    } 
-    else if (pathname.includes('/cats/find-home') && req.method == 'POST') {
+    } else if (pathname.includes('/cats/find-home') && req.method == 'POST') {
         let id = pathname.split('/').pop();
 
-        fs.readFile('./data/cats.json', 'utf8', (err, data) => {
-            
+        fs.readFile('./data/cats.json', 'utf8', (err, data) => {            
             let allCats = JSON.parse(data);
-            // console.log(allCats);
 
             let currCat = allCats.findIndex(cat => cat.id = id);
             if(currCat > -1 ? allCats.splice(currCat, 1): false);
+            // console.log(currCat + ' <<<<<<<<< Curr Cat');
 
-            console.log(currCat + ' <<<<<<<<< Curr Cat');
-
-            // if(currCat != undefined){
-            //     allCats = currCat;
-            // } else {
-            //     allCats = [];
-            // }
-            
             let json =JSON.stringify(allCats);
 
             fs.writeFile('./data/cats.json', json, () => {
